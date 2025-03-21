@@ -1,5 +1,6 @@
 # pylint: disable=disallowed-name
 """Circuit maintenance parser for Tata Email notifications."""
+
 from typing import List, Dict, Any
 from datetime import datetime
 
@@ -26,7 +27,10 @@ class HtmlParserTata(Html):
                 if prev_lower == "ticket reference - tcl":
                     data["maintenance_id"] = curr
                 elif prev_lower == "service id":
-                    for circuit in curr.split(","):
+                    circuits = curr.split(",")
+                    if "NIMS ID" in circuits:
+                        circuits = self.extract_service_ids(soup)
+                    for circuit in circuits:
                         data["circuits"].append(
                             {
                                 "circuit_id": circuit.strip(),
@@ -43,6 +47,29 @@ class HtmlParserTata(Html):
             prev = span.text.strip()
 
         return [data]
+
+    def extract_service_ids(self, soup: ResultSet) -> List[str]:
+        """Get service IDs from nested table"""
+        tables = soup.find_all("table")
+        service_ids = []
+        # Drill down to find the nested table which has the service IDs
+        if len(tables) > 1:
+            second_table = tables[1]
+            tbody = second_table.find("tbody")
+            if tbody:
+                rows = tbody.find_all("tr")
+                for row in rows:
+                    tds = row.find_all("td")
+                    for td in tds:
+                        nested_table = td.find("table")
+                        if nested_table:
+                            nested_rows = nested_table.find_all("tr")
+                            for nested_row in nested_rows:
+                                nested_columns = nested_row.find_all("td")
+                                if nested_columns:
+                                    if nested_columns[0].get_text(strip=True):
+                                        service_ids.append(nested_columns[0].get_text(strip=True))
+        return service_ids
 
 
 class SubjectParserTata(EmailSubjectParser):
