@@ -17,7 +17,6 @@ from circuit_maintenance_parser.parser import EmailDateParser, ICal
 
 from circuit_maintenance_parser.parsers.apple import SubjectParserApple, TextParserApple
 from circuit_maintenance_parser.parsers.aquacomms import HtmlParserAquaComms1, SubjectParserAquaComms1
-from circuit_maintenance_parser.parsers.att import HtmlParserATT1, XlsxParserATT1
 from circuit_maintenance_parser.parsers.aws import SubjectParserAWS1, TextParserAWS1
 from circuit_maintenance_parser.parsers.bso import HtmlParserBSO1
 from circuit_maintenance_parser.parsers.cogent import HtmlParserCogent1, SubjectParserCogent1, TextParserCogent1
@@ -47,6 +46,7 @@ from circuit_maintenance_parser.parsers.turkcell import HtmlParserTurkcell1
 from circuit_maintenance_parser.parsers.verizon import HtmlParserVerizon1
 from circuit_maintenance_parser.parsers.windstream import HtmlParserWindstream1
 from circuit_maintenance_parser.parsers.zayo import HtmlParserZayo1, SubjectParserZayo1
+from circuit_maintenance_parser.parsers.dtag import HtmlParserDTAG
 from circuit_maintenance_parser.processor import CombinedProcessor, GenericProcessor, SimpleProcessor
 from circuit_maintenance_parser.utils import rgetattr
 
@@ -234,17 +234,6 @@ class Arelion(GenericProvider):
     _exclude_filter = PrivateAttr({EMAIL_HEADER_SUBJECT: ["Disturbance Information"]})
 
     _default_organizer = PrivateAttr("support@arelion.com")
-
-
-class ATT(GenericProvider):
-    """ATT provider custom class."""
-
-    _processors: List[GenericProcessor] = PrivateAttr(
-        [
-            CombinedProcessor(data_parsers=[EmailDateParser, HtmlParserATT1, XlsxParserATT1]),
-        ]
-    )
-    _default_organizer = PrivateAttr("g31654@att.com")
 
 
 class AWS(GenericProvider):
@@ -487,6 +476,16 @@ class Tata(GenericProvider):
         ]
     )
     _default_organizer = PrivateAttr("planned.activity@tatacommunications.com")
+
+
+class DTAG(GenericProvider):
+    """DTAG provider custom class."""
+
+    _processors: List[GenericProcessor] = PrivateAttr(
+        [
+            CombinedProcessor(data_parsers=[HtmlParserDTAG, ICal]),
+        ]
+    )
 
 
 class Telia(Arelion):
